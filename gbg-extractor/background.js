@@ -1,7 +1,11 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'SECTOR_DATA') {
         const sectors = message.sectors;
-        console.log("Sectors received:", sectors);
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        // Prepare data for the Discord bot
+        const sectorInfo = sectors.map(s => `${s.opensAt} ${s.name}`).join(' ');
+        const discordMessage = `Sector Data: ${sectorInfo}, User Timezone: ${userTimezone}`;
 
         // Send this data to the Discord bot
         const discordWebhookUrl = 'https://discordapp.com/api/webhooks/YOUR_WEBHOOK_URL';
@@ -12,7 +16,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                content: `New sector data: ${JSON.stringify(sectors)}`
+                content: discordMessage
             }),
         })
         .then(response => response.json())
