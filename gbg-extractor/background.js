@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const discordMessage = `Sector Data: ${sectorInfo}, User Timezone: ${userTimezone}`;
 
         // Send this data to the Discord bot
-        const discordWebhookUrl = 'https://discordapp.com/api/webhooks/YOUR_WEBHOOK_URL';
+        const discordWebhookUrl = 'https://discord.com/api/webhooks/1274955137303183401/FLehqCkQD_tiRUGR2vE4X8jXLikzeCb8bMYpFFOoDoBxmMaJcKLPhLUJBKHRz3v1Hj2i';
         
         fetch(discordWebhookUrl, {
             method: 'POST',
