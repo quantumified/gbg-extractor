@@ -19,7 +19,11 @@
                     });
 
                     // Send the extracted sector data to the background script
-                    chrome.runtime.sendMessage({ type: 'SECTOR_DATA', sectors });
+                    chrome.runtime.sendMessage({
+    type: 'SECTOR_DATA',
+    sectors: extractedSectors // Replace with the actual data structure
+});
+
                 }
             } catch (error) {
                 console.error("Error parsing WebSocket data", error);
