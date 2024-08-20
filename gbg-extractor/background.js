@@ -1,13 +1,12 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'SECTOR_DATA') {
+        console.log('Extracted Data:', message.sectors); // Log the extracted data
         const sectors = message.sectors;
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-        // Prepare data for Discord bot
         const sectorInfo = sectors.map(s => `${s.opensAt} ${s.name}`).join(' ');
         const discordMessage = `Sector Data: ${sectorInfo}, User Timezone: ${userTimezone}`;
 
-        // Send data to Discord bot
         const discordWebhookUrl = 'https://discord.com/api/webhooks/1274955137303183401/FLehqCkQD_tiRUGR2vE4X8jXLikzeCb8bMYpFFOoDoBxmMaJcKLPhLUJBKHRz3v1Hj2i';
         
         fetch(discordWebhookUrl, {
@@ -17,7 +16,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             },
             body: JSON.stringify({ content: discordMessage })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             console.log('Successfully sent data to Discord bot:', data);
         })
@@ -28,7 +32,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-// Function to send error message to the popup UI
 function sendErrorToPopup(errorMessage) {
     chrome.runtime.sendMessage({ type: 'ERROR', errorMessage });
 }
