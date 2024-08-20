@@ -5,10 +5,17 @@ document.getElementById('extractBtn').addEventListener('click', () => {
             func: extractData
         });
     });
+
     document.getElementById('status').innerText = "Data extraction triggered.";
 });
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'ERROR') {
+        document.getElementById('error').innerText = message.errorMessage;
+    }
+});
+
 function extractData() {
-    // This function runs in the context of the web page
+    // Send message to the background script to initiate extraction
     chrome.runtime.sendMessage({ type: 'EXTRACT_GBG_DATA' });
 }
