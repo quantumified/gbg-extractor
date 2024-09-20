@@ -1,10 +1,11 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'sendMessage') {
-        const webhookURL = 'https://discord.com/api/webhooks/1274955137303183401/FLehqCkQD_tiRUGR2vE4X8jXLikzeCb8bMYpFFOoDoBxmMaJcKLPhLUJBKHRz3v1Hj2i';
+        const webhookURL = 'YOUR_DISCORD_WEBHOOK_URL';
         const message = request.message;
         const timezone = request.timezone;
 
-        const fullMessage = `${message}\n\n(Timezone: ${timezone})`;
+        // Combine the message and timezone on the same line
+        const fullMessage = `${message} (${timezone})`;
 
         fetch(webhookURL, {
             method: 'POST',
