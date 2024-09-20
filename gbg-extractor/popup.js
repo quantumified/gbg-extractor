@@ -1,3 +1,6 @@
 document.getElementById('send').addEventListener('click', () => {
-    chrome.runtime.sendMessage({ action: 'sendMessage' });
+    const message = document.getElementById('message').value || "No message provided";
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    chrome.runtime.sendMessage({ action: 'sendMessage', message, timezone });
 });
