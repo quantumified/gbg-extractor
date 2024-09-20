@@ -1,37 +1,22 @@
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === 'SECTOR_DATA') {
-        console.log('Extracted Data:', message.sectors); // Log the extracted data
-        const sectors = message.sectors;
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'sendMessage') {
+        const webhookURL = 'https://discord.com/api/webhooks/1274955137303183401/FLehqCkQD_tiRUGR2vE4X8jXLikzeCb8bMYpFFOoDoBxmMaJcKLPhLUJBKHRz3v1Hj2i';
+        const testMessage = 'Chrome ext test.';
 
-        const sectorInfo = sectors.map(s => `${s.opensAt} ${s.name}`).join(' ');
-        const discordMessage = `Sector Data: ${sectorInfo}, User Timezone: ${userTimezone}`;
-
-        const discordWebhookUrl = 'https://discord.com/api/webhooks/1274955137303183401/FLehqCkQD_tiRUGR2vE4X8jXLikzeCb8bMYpFFOoDoBxmMaJcKLPhLUJBKHRz3v1Hj2i';
-        
-        fetch(discordWebhookUrl, {
+        fetch(webhookURL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ content: discordMessage })
+            body: JSON.stringify({ content: testMessage }),
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+        .then((response) => {
+            if (response.ok) {
+                console.log('Message sent successfully!');
+            } else {
+                console.error('Failed to send message.');
             }
-            return response.json();
         })
-        .then(data => {
-            console.log('Successfully sent data to Discord bot:', data);
-        })
-        .catch(error => {
-            console.error('Error sending data to Discord bot:', error);
-            sendErrorToPopup('Error sending data to Discord bot: ' + error.message);
-        });
+        .catch((error) => console.error('Error:', error));
     }
 });
-
-function sendErrorToPopup(errorMessage) {
-    chrome.runtime.sendMessage({ type: 'ERROR', errorMessage });
-}
