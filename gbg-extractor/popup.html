@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GBG Sector Extractor</title>
+    <title>GBG Sector Extractor & Discord Messenger</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            width: 200px;
+            width: 250px;
             margin: 0;
             padding: 10px;
         }
@@ -18,6 +18,8 @@
             display: inline-block;
             font-size: 16px;
             cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
         }
         button:hover {
             background-color: #45a049;
@@ -26,14 +28,23 @@
             color: red;
             margin-top: 10px;
         }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <h3>Extract GBG Data</h3>
+    <h3>GBG Sector Extractor</h3>
     <button id="extractBtn">Extract Data</button>
     <p id="status"></p>
     <p class="error" id="error"></p>
 
+    <h3>Send to Discord</h3>
+    <input type="text" id="message" placeholder="Enter message">
+    <button id="send">Send to Discord</button>
+    
     <script src="popup.js"></script>
 </body>
 </html>
