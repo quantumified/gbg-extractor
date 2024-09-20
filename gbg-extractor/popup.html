@@ -24,15 +24,17 @@
         button:hover {
             background-color: #45a049;
         }
-        .error {
-            color: red;
-            margin-top: 10px;
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <h3>Send to Discord</h3>
-    <button id="send">Send Test Message</button>
+    <input type="text" id="message" placeholder="Enter your message">
+    <button id="send">Send Message</button>
     
     <script src="popup.js"></script>
 </body>
