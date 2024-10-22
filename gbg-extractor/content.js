@@ -5,5 +5,5 @@ if (typeof FoEproxy !== 'undefined') {
       console.log('Full map data:', mapData);
   });
 } else {
-  console.error('FoEproxy is not available on this page.');
+  console.error('FoEproxy is not available.');
 }
