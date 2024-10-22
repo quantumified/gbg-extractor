@@ -1,40 +1,42 @@
-chrome.runtime.onInstalled.addListener(() => {
-  console.log('FoE Guild Battleground Extractor installed.');
-});
-
-// Listener for messages from popup.js
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'logMapData') {
-    logMapData();
+    injectScriptsAndLogData();
   }
 });
 
-// Function to log the map data to the console (executed in the content script context)
-function logMapData() {
+function injectScriptsAndLogData() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs.length === 0) {
-      console.error("No active tab found. Please ensure you have a tab open and active.");
-      return; // Early return if no active tab is found
+      console.error("No active tab found.");
+      return;
     }
 
+    // Inject FoEproxy and other necessary scripts into the page
     chrome.scripting.executeScript({
       target: { tabId: tabs[0].id },
-      function: () => {
-        if (typeof FoEproxy !== 'undefined') {
-          FoEproxy.addHandler('GuildBattlegroundService', 'getBattleground', (data) => {
-            const mapData = data.responseData.map.provinces;
-
-            // Check if mapData is empty
-            if (!mapData || mapData.length === 0) {
-              console.log('No GBG game found.'); // Log if no map data is present
-            } else {
-              console.log('Full map data:', mapData); // Log the map data if present
-            }
-          });
-        } else {
-          console.error('FoEproxy is not available. This may indicate that the GBG is not currently active.');
-        }
-      },
+      files: ['foeproxy.js'], // Inject the FoEproxy script
+    }, () => {
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id },
+        function: logGBGData, // Call this function to log GBG data after injection
+      });
     });
   });
+}
+
+// Function that logs the Guild Battleground data
+function logGBGData() {
+  if (typeof FoEproxy !== 'undefined') {
+    FoEproxy.addHandler('GuildBattlegroundService', 'getBattleground', (data) => {
+      const mapData = data.responseData.map.provinces;
+
+      if (!mapData || mapData.length === 0) {
+        console.log('No GBG game found.');
+      } else {
+        console.log('Full map data:', mapData);
+      }
+    });
+  } else {
+    console.error('FoEproxy is not available.');
+  }
 }
