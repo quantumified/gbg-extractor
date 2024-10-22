@@ -1,0 +1,32 @@
+{
+  "name": "FoE Guild Battleground Extractor",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "*://*.forgeofempires.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.forgeofempires.com/*"],
+      "js": ["content.js", "foeproxy.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["foeproxy.js"],
+      "matches": ["*://*.forgeofempires.com/*"]
+    }
+  ]
+}
