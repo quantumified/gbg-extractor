@@ -11,14 +11,21 @@ function injectScriptsAndLogData() {
       return;
     }
 
-    // Inject FoEproxy and other necessary scripts into the page
+    // Inject FoEproxy script into the page
     chrome.scripting.executeScript({
       target: { tabId: tabs[0].id },
       files: ['foeproxy.js'], // Inject the FoEproxy script
-    }, () => {
+    }, (injectionResults) => {
+      // Ensure the script was injected successfully
+      if (chrome.runtime.lastError || !injectionResults || injectionResults.length === 0) {
+        console.error('Failed to inject FoEproxy:', chrome.runtime.lastError);
+        return;
+      }
+
+      // Now execute logGBGData after the FoEproxy script is injected
       chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
-        function: logGBGData, // Call this function to log GBG data after injection
+        function: logGBGData, // Call this function to log GBG data
       });
     });
   });
@@ -39,4 +46,4 @@ function logGBGData() {
   } else {
     console.error('FoEproxy is not available.');
   }
-}
+                  }
