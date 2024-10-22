@@ -1,27 +1,32 @@
 {
-  "manifest_version": 3,
-  "name": "FOE GBG Sector Extractor",
-  "description": "Extracts Guild Battleground sector data and sends it to a Discord bot.",
+  "name": "FoE Guild Battleground Extractor",
   "version": "1.0",
+  "manifest_version": 3,
   "permissions": [
-    "activeTab",
-    "scripting"
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "activeTab"
   ],
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": ["https://*.forgeofempires.com/*"],
-      "js": ["content.js"]
-    }
+  "host_permissions": [
+    "*://*.forgeofempires.com/*"
   ],
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.forgeofempires.com/*"],
+      "js": ["content.js", "foeproxy.js"]
     }
-  }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["foeproxy.js"],
+      "matches": ["*://*.forgeofempires.com/*"]
+    }
+  ]
 }

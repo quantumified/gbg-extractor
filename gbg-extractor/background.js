@@ -1,26 +1,23 @@
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'sendMessage') {
-        const webhookURL = 'https://discord.com/api/webhooks/1274955137303183401/FLehqCkQD_tiRUGR2vE4X8jXLikzeCb8bMYpFFOoDoBxmMaJcKLPhLUJBKHRz3v1Hj2i';  // Make sure correct webhook URL is used.
-        const message = request.message;
-        const timezone = request.timezone;
-
-        // Combine the message and timezone without parentheses
-        const fullMessage = `${message} ${timezone}`;
-
-        fetch(webhookURL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ content: fullMessage }),
-        })
-        .then((response) => {
-            if (response.ok) {
-                console.log('Message sent successfully!');
-            } else {
-                console.error('Failed to send message.');
-            }
-        })
-        .catch((error) => console.error('Error:', error));
-    }
+chrome.runtime.onInstalled.addListener(() => {
+  console.log('FoE Guild Battleground Extractor installed.');
 });
+
+// Define the button click action to log the full map data
+chrome.action.onClicked.addListener((tab) => {
+  chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    function: logMapData
+  });
+});
+
+// Function to log the map data to the console (executed in the content script context)
+function logMapData() {
+  if (typeof FoEproxy !== 'undefined') {
+    FoEproxy.addHandler('GuildBattlegroundService', 'getBattleground', (data, postData) => {
+      const mapData = data.responseData.map.provinces;
+      console.log('Full map data:', mapData);
+    });
+  } else {
+    console.error('FoEproxy is not available on this page.');
+  }
+}
