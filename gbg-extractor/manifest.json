@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "matches": ["*://*.forgeofempires.com/*"],
-      "js": ["content.js", "foeproxy.js"]
+      "js": ["foeproxy.js", "content.js"]
     }
   ],
   "web_accessible_resources": [
