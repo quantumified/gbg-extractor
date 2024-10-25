@@ -7,15 +7,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function injectScriptsAndLogData() {
   console.log("Injecting Scripts");
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs.length === 0) {
+    if (!tabs || tabs.length === 0) {
       console.error("No active tab found.");
       return;
     }
-      // Now execute logGBGData after the FoEproxy script is injected
-      console.log("setup script trigger");
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        function: logGBGData, // Call this function to log GBG data
+
+    const tabId = tabs[0].id;
+
+    // Execute logGBGData in the active tab
+    console.log("setup script trigger");
+    chrome.scripting.executeScript({
+      target: { tabId },
+      func: logGBGData,
+    }, (results) => {
+      if (chrome.runtime.lastError) {
+        console.error("Error executing script:", chrome.runtime.lastError.message);
+      } else if (!results || results.length === 0) {
+        console.error("Script executed but no results returned.");
+      } else {
+        console.log("Script executed successfully:", results);
+      }
     });
   });
 }
