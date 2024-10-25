@@ -1,3 +1,5 @@
+let isScriptInjected = false;
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'logMapData') {
     injectScriptsAndLogData();
@@ -5,39 +7,53 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function injectScriptsAndLogData() {
-  console.log("Injecting Scripts");
+  console.log("Injecting Scripts...");
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (!tabs || tabs.length === 0) {
-      console.error("No active tab found.");
+    if (tabs.length === 0) {
+      console.error("No active tab found. Retrying...");
+      setTimeout(injectScriptsAndLogData, 500); // Retry after 500ms if no active tab is found
       return;
     }
 
-    const tabId = tabs[0].id;
+    const activeTabId = tabs[0].id;
 
-    // Execute logGBGData in the active tab
-    console.log("setup script trigger");
-    chrome.scripting.executeScript({
-      target: { tabId },
-      func: logGBGData,
-    }, (results) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error executing script:", chrome.runtime.lastError.message);
-      } else if (!results || results.length === 0) {
-        console.error("Script executed but no results returned.");
-      } else {
-        console.log("Script executed successfully:", results);
-      }
-    });
+    // Check if the script is already injected to avoid duplicate injections
+    if (!isScriptInjected) {
+      console.log("Setting up script trigger.");
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: activeTabId },
+          function: logGBGData,
+        },
+        (results) => {
+          // Handle the results or errors from logGBGData execution
+          if (chrome.runtime.lastError) {
+            console.error("Script injection error:", chrome.runtime.lastError);
+          } else {
+            console.log("Script executed:", results);
+            isScriptInjected = true; // Mark script as injected after first successful execution
+          }
+        }
+      );
+    } else {
+      console.log("Script already injected, skipping re-injection.");
+    }
   });
 }
 
-// Function that logs the Guild Battleground data
 function logGBGData() {
   console.log("called logGBGData()");
   if (typeof FoEproxy !== 'undefined') {
     console.log("FoEproxy is available");
+
+    // Listen for Guild Battleground data from FoEproxy
     FoEproxy.addHandler('GuildBattlegroundService', 'getBattleground', (data) => {
-      console.log('Full data:', data);
+      if (data && data.responseData && data.responseData.map) {
+        const mapData = data.responseData.map.provinces;
+        console.log('Extracted GBG map data:', mapData);
+      } else {
+        console.log("No map data available in GuildBattlegroundService response.");
+      }
     });
   } else {
     console.error('FoEproxy is not available.');
