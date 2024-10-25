@@ -1,7 +1,7 @@
 # GBG Extractor
-A Chrome extension made to extract GBG sector data as a map and parse it into readable for and send it to a webhook.. Download the latest release [here](https://github.com/quantumified/gbg-extractor/releases). Keep in mind this is still in early development so expect bugs and issues.
+A Chrome extension made to extract GBG sector data and parse it into readable format. Download the latest release [here](https://github.com/quantumified/gbg-extractor/releases). Keep in mind this is still in early development so expect bugs and issues.
 
-This project makes use of FoE-Helper's open source proxy logic as well as extraction logic (foeproxy.js & some logic in background.js), both are licensed under APGL.
+This project makes use of FoE-Helper's open source proxy (foeproxy.js), which is licensed under APGL.
 
 [![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
 
