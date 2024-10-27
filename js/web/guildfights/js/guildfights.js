@@ -14,26 +14,7 @@
  */
 
 // Function 1
-function parserBattlegroundData(data) {
-    const result = [];
 
-    // Function to parse province data
-    function parserProvince(province) {
-        // Check if the province is owned by the current participant and if lockedUntil is defined
-        if (province.ownerId !== data.currentParticipantId && province.lockedUntil !== undefined) {
-            result.push(`${province.lockedUntil} ${province.title}`);
-        }
-    }
-
-    // Accessing provinces in the provided map structure
-    if (data.map && data.map.provinces) {
-        data.map.provinces.forEach(province => {
-            parserProvince(province);
-        });
-    }
-
-    return result.join(' ');
-}
 
 
 // Provinznamen der GG
@@ -49,8 +30,6 @@ FoEproxy.addMetaHandler('battleground_colour', (xhr, postData) => {
 
 // Gildengefechte
 FoEproxy.addHandler('GuildBattlegroundService', 'getPlayerLeaderboard', (data, postData) => {
-	const result = parseBattlegroundData(data.responseData);
-	console.log(result); // Logs the parsed result
 	GuildFights.HandlePlayerLeaderboard(data.responseData);
 });
 
@@ -77,27 +56,11 @@ FoEproxy.addHandler('RankingService', 'searchRanking', (data, postData) => {
 
 // Gildengefechte - Map, Gilden
 FoEproxy.addHandler('GuildBattlegroundService', 'getBattleground', (data, postData) => {
-	console.log(data.responseData); // consolelog + send to discord
-	console.log(parserBattlegroundData(data.responseData));
-	const parsedData = parserBattlegroundData(data.responseData);
-
-	// Webhook URL
-	const webhookURL = 'https://discord.com/api/webhooks/1274955137303183401/FLehqCkQD_tiRUGR2vE4X8jXLikzeCb8bMYpFFOoDoBxmMaJcKLPhLUJBKHRz3v1Hj2i';  // Make sure correct webhook URL is used.
 	
-	// Create a simple HTTP POST request to send data to Discord webhook
-	var xhr = new XMLHttpRequest();
-	xhr.open("POST", webhookURL, true);
-	xhr.setRequestHeader('Content-Type', 'application/json');
-	
-	// Sending the parsed data as JSON payload
-	xhr.send(JSON.stringify({
-		content: parsedData  // Discord expects a "content" field with the message
-	}));
-	
-	// end
 	GuildFights.init();
 	GuildFights.CurrentGBGRound = data['responseData']['endsAt'];
-
+	
+	
 	if (GuildFights.curDateFilter === null || GuildFights.curDateEndFilter === null) {
 		GuildFights.curDateFilter = moment.unix(GuildFights.CurrentGBGRound).subtract(11, 'd').format('YYYYMMDD');
 		GuildFights.curDateEndFilter = MainParser.getCurrentDateTime();
@@ -116,6 +79,120 @@ FoEproxy.addHandler('GuildBattlegroundService', 'getBattleground', (data, postDa
 	if ($('#LiveGildFighting').length > 0) {
 		GuildFights.BuildFightContent();
 	}
+	//start
+	function parserBattlegroundData(data) {
+		const result = [];
+		const mapdata = ProvinceMap.ProvinceData(); // Get the complete province map data
+		const currentGuildId = data.currentParticipantId; // The guild ID of the current participant
+	
+		// Debugging: Log current guild ID
+		console.log("Current Guild ID:", currentGuildId);
+	
+		// Step 1: Create a set of owned province IDs from the provided data
+		const ownedProvinceIds = new Set();
+	
+		// Collect owned provinces based on guild ID from data.map.provinces
+		if (data.map && data.map.provinces) {
+			for (const province of data.map.provinces) {
+				// Debugging: Check each province's owner ID
+				console.log(`Checking Province: ID=${province.id}, Owner ID=${province.ownerId}`);
+				if (province.ownerId === currentGuildId) {
+					ownedProvinceIds.add(province.id);
+				}
+			}
+		}
+	
+		// Debugging: Log owned province IDs
+		console.log("Owned Province IDs:", Array.from(ownedProvinceIds));
+	
+		// Step 2: Function to filter provinces based on adjacency to owned provinces
+		function parserProvince(province) {
+			// Skip provinces owned by the guild
+			if (province.ownerId === currentGuildId) {
+				return; // Skip owned provinces
+			}
+	
+			const lockedUntil = province.lockedUntil; // Always get lockedUntil from province
+			const provinceId = province.id; // Get the province ID
+	
+			// Fetch connections from mapdata based on province ID
+			const connections = mapdata[provinceId]?.connections || []; // Get connections based on ID
+	
+			// Debugging: Log province details for missing data
+			if (lockedUntil === undefined || connections.length === 0) {
+				console.warn(`Province ${province.title} is missing lockedUntil or connections:`, province);
+				return; // Skip if missing required properties
+			}
+	
+			// Debugging: Log connections of the current province
+			console.log(`Processing Province: ${province.title}, LockedUntil: ${lockedUntil}, Connections: ${connections}`);
+	
+			// Check if any neighboring province is owned by the guild
+			const isAdjacentToOwned = connections.some(connectionId => {
+				const isOwned = ownedProvinceIds.has(connectionId);
+				// Debugging: Log adjacency check
+				console.log(`Checking Connection: Province ID=${connectionId}, Owned=${isOwned}`);
+				return isOwned;
+			});
+	
+			// If adjacent to an owned province, add it to the result
+			if (isAdjacentToOwned) {
+				result.push(`${lockedUntil} ${province.title}`); // Use province.lockedUntil here
+				console.log(`Added to result: ${lockedUntil} ${province.title}`); // Debugging: Log added provinces
+			} else {
+				console.log(`Not adjacent to owned provinces: ${province.title}`); // Debugging: Not added
+			}
+		}
+	
+		// Step 3: Parse each province in the provided map structure
+		if (data.map && data.map.provinces) {
+			data.map.provinces.forEach(province => {
+				parserProvince(province);
+			});
+		}
+	
+		// Join the results into a single string
+		return result.join(' ');
+	}
+	
+	// Example usage and debug logs
+	console.log("Response Data:", data.responseData); // Debugging: log response data
+	const parsedData = parserBattlegroundData(data.responseData); // Get parsed data
+	
+	// Log the parsed data to see if any results were generated
+	console.log("Parsed Data Before Sending:", parsedData);
+	
+	// Check if parsedData is empty
+	if (!parsedData) {
+		console.warn("Parsed Data is empty, nothing to send to Discord.");
+	} else {
+		// Webhook URL
+		const webhookURL = 'https://discord.com/api/webhooks/1274955137303183401/FLehqCkQD_tiRUGR2vE4X8jXLikzeCb8bMYpFFOoDoBxmMaJcKLPhLUJBKHRz3v1Hj2i';  // Correct webhook URL
+	
+		// Create a simple HTTP POST request to send data to Discord webhook
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", webhookURL, true);
+		xhr.setRequestHeader('Content-Type', 'application/json');
+	
+		// Add response handlers to the request
+		xhr.onload = function () {
+			console.log("Webhook response:", xhr.responseText);
+			if (xhr.status !== 204) {
+				console.error("Unexpected response status:", xhr.status, xhr.statusText);
+			}
+		};
+	
+		xhr.onerror = function () {
+			console.error("Error sending webhook:", xhr.statusText);
+		};
+	
+		// Sending the parsed data as a plain string
+		console.log("Sending payload:", parsedData); // Log the payload
+		xhr.send(JSON.stringify({ content: parsedData })); // Still need to wrap the string in a JSON object for Discord
+	}
+	
+	
+	// end
 });
 
 FoEproxy.addHandler("ClanService","getClanData",(data)=>{
