@@ -15,25 +15,24 @@
 
 // Function 1
 function parserBattlegroundData(data) {
-	const currentPlayerParticipant = data.currentPlayerParticipant;
-	const result = [];
+    const result = [];
 
-	// Function to parse province data
-	function parserProvince(province) {
-		// Check if the province is owned by the current participant and if lockedUntil is defined
-		if (province.ownerId !== data.currentParticipantId && province.lockedUntil !== undefined) {
-			result.push(`${province.lockedUntil} ${province.title}`);
-		}
-	}
-	
-	// Accessing provinces in the provided map structure
-	if (data.map && data.map.provinces) {
-		data.map.provinces.forEach(province => {
-			parserProvince(province);
-		});
-	}
+    // Function to parse province data
+    function parserProvince(province) {
+        // Check if the province is owned by the current participant and if lockedUntil is defined
+        if (province.ownerId !== data.currentParticipantId && province.lockedUntil !== undefined) {
+            result.push(`${province.lockedUntil} ${province.title}`);
+        }
+    }
 
-	return result.join(' ');
+    // Accessing provinces in the provided map structure
+    if (data.map && data.map.provinces) {
+        data.map.provinces.forEach(province => {
+            parserProvince(province);
+        });
+    }
+
+    return result.join(' ');
 }
 
 
