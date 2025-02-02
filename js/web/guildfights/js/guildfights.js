@@ -14,8 +14,7 @@
  */
 
 // Function 1
-
-
+//
 
 // Provinznamen der GG
 FoEproxy.addMetaHandler('guild_battleground_maps', (xhr, postData) => {
